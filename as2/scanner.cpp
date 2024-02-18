@@ -1,3 +1,13 @@
+/*
+    Name: Michael Podolsky, 2001945839, CS 326 1001, Project 2
+    Description: This program scans and parses a made-up language. 
+        Any invalid tokens or grammatical rules will result in an error.
+    Input: scanner.cpp accepts a buffer of all the characters in the 
+        provided code file.
+    Output: scanner.cpp checks that all tokens and characters are valid 
+    within the language. It ultimately builds a vector of tokens that 
+    gets stored in main.cpp (which calls the scanner)
+*/
 //
 // Created by BEN on 2/8/24.
 //
@@ -7,12 +17,13 @@
 #include "scanner.hpp"
 
 std::string Scanner::tokenNames[] = {
-    "n/a", "<EOF>", "BIT", "CLONE", "DUB", "POP", "MUL", "DIV", "PLUS", "MINUS",
-    "STRING", "RHEAD", "LHEAD", "EHEAD", "BODY", "DUCK_FR", "DUCK_FL", "DUCK_ER",
-    "LEG", "ARROW", "KEYWORD", "ID"
+    "n/a", "<EOF>", "BIT", "CLONE", "DUB", "POP", "MUL", "DIV", "PLUS",
+    "MINUS", "STRING", "RHEAD", "LHEAD", "EHEAD", "BODY", "DUCK_FR",
+    "DUCK_FL", "DUCK_ER", "LEG", "ARROW", "KEYWORD", "ID"
 };
 
-Scanner::Scanner(int length, char* buffer) : length_(length), buffer_(buffer), index_(0) {
+Scanner::Scanner(int length, char* buffer) : length_(length),
+    buffer_(buffer), index_(0) {
     lookahead_ = buffer_[index_];
 }
 
@@ -22,10 +33,11 @@ void Scanner::consume() {
 }
 
 Token Scanner::nextToken() {
-    TokenType tokenType; // Will hold token type
+    TokenType tokenType = TokenType::tok_na; // Will hold token type
     std::string token = ""; // Will hold lexeme
 
-    while (lookahead_ != eof && lookahead_ != '\0') { // Loop through until EOF
+    // Loop through until EOF
+    while (lookahead_ != eof && lookahead_ != '\0') {
         switch (lookahead_) {
             case ' ': // Space
             case '\n': // Newline
@@ -123,7 +135,9 @@ Token Scanner::nextToken() {
                     // Check for id or keyword
                     return name();
                 } else {
-                    std::cerr << "[SCANNER] Invalid token!" << std::endl; // no matches; invalid
+                    std::cout << "[SCANNER] unknown character found '"
+                        << lookahead_ << "'" << std::endl; // invalid
+                     // no matches; invalid
                     exit(0);
                 }
         }
@@ -133,26 +147,29 @@ Token Scanner::nextToken() {
         }
     }
 
-    return Token(TokenType::tok_eof, "EOF"); // Return EOF
+    return Token(TokenType::tok_eof, "<EOF>"); // Return EOF
 }
 
 void Scanner::match(char x) {
     if (lookahead_ != x) {
-        std::cerr << "[SCANNER] Invalid token!" << std::endl; // invalid
+        std::cout << "[SCANNER] unknown character found '"
+            << lookahead_ << "'" << std::endl; // invalid
         exit(0);
     }
-    consume();
+    consume(); // If valid, consume the character
 }
 
 bool Scanner::isAlpha() const {
-    if (lookahead_ >= 'a' && lookahead_ <= 'z' || lookahead_ >= 'A' && lookahead_ <= 'Z' || lookahead_ == '_') {
+    if (lookahead_ >= 'a' && lookahead_ <= 'z' || lookahead_ >= 'A'
+        && lookahead_ <= 'Z' || lookahead_ == '_') {
         return true; // Lookahead is a letter or underscore
     }
     return false; // Lookahead is not a letter
 }
 
 bool Scanner::isLetter() const {
-    if (lookahead_ >= 'a' && lookahead_ <= 'z' || lookahead_ >= 'A' && lookahead_ <= 'Z') {
+    if (lookahead_ >= 'a' && lookahead_ <= 'z' || 
+        lookahead_ >= 'A' && lookahead_ <= 'Z') {
         return true; // Lookahead is a letter
     }
     return false; // Lookahead is not a letter
@@ -165,7 +182,9 @@ Token Scanner::name() {
         consume();
     }
 
-    if (stringValue == "hey" || stringValue == "vous" || stringValue == "LeQuack") {
+    if (stringValue == "hey"
+        || stringValue == "vous"
+        || stringValue == "LeQuack") {
         // Is a keyword, create keyword token
         return Token(TokenType::tok_keyword, stringValue);
     } else {
@@ -175,5 +194,5 @@ Token Scanner::name() {
 }
 
 void Scanner::whitespace() {
-    consume();
+    consume(); // Consume whitespace but do nothing with it
 }
