@@ -26,12 +26,15 @@ enum TokenType {
                     // '###'
     tok_duck_fl,    // '>@'
                     // ' ###'
-    tok_duck_er,    // '  @='
+    tok_duck_er,    // '=@'
                     // '###'
     tok_leg,        // ','
     tok_arrow,      // '->'
     tok_keyword,
-    tok_id
+    tok_id,
+    tok_comment,
+    tok_duck_erl,
+    tok_int
 };
 
 #endif // token_type_hpp

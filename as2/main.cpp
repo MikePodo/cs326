@@ -25,7 +25,7 @@ Token createDuck(const Token& head, const Token& body) {
             TokenType::tok_duck_fr, "@<\n###" 
         };
         case TokenType::tok_ehead:return {
-            TokenType::tok_duck_er, "@=\n###"
+            TokenType::tok_duck_erl, "=@\n ###\n ``"
         };
         case TokenType::tok_lhead:return {
             TokenType::tok_duck_fl, ">@\n   ###"
@@ -94,15 +94,27 @@ int main(int argc, char* argv[]) {
             tokens[i].getType() == TokenType::tok_lhead ||
             tokens[i].getType() == TokenType::tok_ehead) {
             // Found a head, now need to find the nearest body
-            for (int j = i + 1; j < tokens.size(); j++) {
+            for (int j = i + 1; j < tokens.size(); j++) {                
                 // Loop through remaining tokens to find a body
                 if (tokens[j].getType() == TokenType::tok_body) { 
                     // Found body
                     Token fullDuck = createDuck(tokens[i], tokens[j]);
                     // Insert fullDuck at head position
                     tokens[i] = fullDuck;
+
                      // remove existing head and body
                     tokens.erase(tokens.begin() + j);
+
+                    // Find corresponding legs if any
+                    for (int k = j; k < tokens.size(); k++) { 
+                        if (tokens[k].getType() == TokenType::tok_leg) {
+                            // Found leg
+                            // Remove legs 1 and 2
+                            tokens.erase(tokens.begin() + k);
+                            tokens.erase(tokens.begin() + k); 
+                            break;
+                        }
+                    }
                     break;
                 }
             }

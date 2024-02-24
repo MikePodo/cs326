@@ -29,7 +29,7 @@ class Scanner {
     // Returns true if the lookahead is a letter or an underscore.
     bool isAlpha() const;
     // Returns true if the lookahead is a letter
-    bool isLetter() const;
+    bool isAlphanumberic() const;
     // Returns an identifier or the keyword: 'hey', 'vous', or 'LeQuack'
     Token name();
     // Consumes a whitespace, a tab, or a line-feed.

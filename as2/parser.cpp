@@ -37,22 +37,23 @@ bool Parser::check(std::vector<TokenType> types) {
 
 bool Parser::check(TokenType type) {
     // Check if lookahead type is the same as type argument
-    if (lookahead_.getType() == type) {
-        return true; // Return success
-    }
+    if (lookahead_.getType() == type) return true; // Return success
     return false; // Return failure
 }
 
 void Parser::code() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // code → statement code ∣ ϵ
     if (check({ TokenType::tok_duck_fr, TokenType::tok_duck_fl,
             TokenType::tok_duck_er, TokenType::tok_bit,
+            TokenType::tok_duck_erl,
             TokenType::tok_clone, TokenType::tok_dub,
             TokenType::tok_pop, TokenType::tok_mul,
             TokenType::tok_div, TokenType::tok_plus,
             TokenType::tok_minus, TokenType::tok_string,
             TokenType::tok_arrow, TokenType::tok_id, 
-            TokenType::tok_keyword })) {
+            TokenType::tok_keyword, TokenType::tok_int })) {
         statement();
         code();
     } else if (lookahead_.getType() == TokenType::tok_eof) {
@@ -67,15 +68,18 @@ void Parser::code() {
 }
 
 void Parser::statement() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // statement → duck_opt quacks duck_opt
     if (check({ TokenType::tok_duck_fr, TokenType::tok_duck_fl,
             TokenType::tok_duck_er, TokenType::tok_bit,
+            TokenType::tok_duck_erl,
             TokenType::tok_clone, TokenType::tok_dub,
             TokenType::tok_pop, TokenType::tok_mul,
             TokenType::tok_div, TokenType::tok_plus,
             TokenType::tok_minus, TokenType::tok_string,
             TokenType::tok_arrow, TokenType::tok_id,
-            TokenType::tok_keyword })) {
+            TokenType::tok_keyword, TokenType::tok_int })) {
         duck_opt();
         quacks();
         duck_opt();
@@ -88,12 +92,14 @@ void Parser::statement() {
 }
 
 void Parser::duck() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
     // duck → duck_facing_right ∣ duck_facing_left ∣ duck_facing_eright
     if (check(TokenType::tok_duck_fr)) {
         duck_facing_right();
     } else if (check(TokenType::tok_duck_fl)) {
         duck_facing_left();
-    } else if (check(TokenType::tok_duck_er)) {
+    } else if (check({TokenType::tok_duck_er, 
+        TokenType::tok_duck_erl})) {
         duck_facing_eright();
     } else {
         // No match; error
@@ -104,15 +110,20 @@ void Parser::duck() {
 }
 
 void Parser::duck_opt() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
     // duck_opt → duck ∣ ϵ
     if (check({ TokenType::tok_duck_fr,
         TokenType::tok_duck_fl,
-        TokenType::tok_duck_er })) {
+        TokenType::tok_duck_er, 
+        TokenType::tok_duck_erl
+        })) {
         duck();
     }
 }
 
 void Parser::duck_facing_right() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // duck_facing_right → ’@<’
     // ’### ’  
     if (check(TokenType::tok_duck_fr)) {
@@ -125,6 +136,8 @@ void Parser::duck_facing_right() {
 }
 
 void Parser::duck_facing_left() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // duck_facing_left → ’>@’
     // ’ ###’
     if (check(TokenType::tok_duck_fl)) {
@@ -138,10 +151,14 @@ void Parser::duck_facing_left() {
 }
 
 void Parser::duck_facing_eright() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // duck_facing_eright → ’@=’
     // ’### ’
     if (check(TokenType::tok_duck_er)) {
         match(TokenType::tok_duck_er);
+    } else if (check(TokenType::tok_duck_erl)) {
+        match(TokenType::tok_duck_erl);
     } else {
         // No match; error
         std::cout << "[PARSER] Something went wrong during parsing!"
@@ -151,6 +168,8 @@ void Parser::duck_facing_eright() {
 }
 
 void Parser::quacks() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // quacks → quack quacks ∣ ϵ
     if (check({ TokenType::tok_bit,
             TokenType::tok_clone, TokenType::tok_dub,
@@ -158,13 +177,15 @@ void Parser::quacks() {
             TokenType::tok_div, TokenType::tok_plus,
             TokenType::tok_minus, TokenType::tok_string,
             TokenType::tok_arrow, TokenType::tok_id, 
-            TokenType::tok_keyword })) {
+            TokenType::tok_keyword, TokenType::tok_int })) {
         quack();
         quacks();
     }
 }
 
 void Parser::quack() {
+    if (check(TokenType::tok_comment)) consume(); // Consume comment
+
     // quack → bit ∣ clone ∣ dub ∣ pop ∣ mul ∣ div ∣ plus ∣ sub ∣ string
     // ∣ int ∣ letter
     if (check(TokenType::tok_bit)) {
@@ -187,6 +208,8 @@ void Parser::quack() {
         match(TokenType::tok_string);
     } else if (check(TokenType::tok_arrow)) {
         match(TokenType::tok_arrow);
+    } else if (check(TokenType::tok_int)) {
+        match(TokenType::tok_int);
     } else if (check(TokenType::tok_id)) {
         match(TokenType::tok_id);
     } else if (check(TokenType::tok_keyword)) {

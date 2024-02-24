@@ -1,0 +1,48 @@
+Scanning the file...
+Scanning done!
+
+List of tokens:
+<'',21,COMMENT>
+<'=@',13,EHEAD>
+<'',21,COMMENT>
+<'###',14,BODY>
+<'',21,COMMENT>
+<'`',18,LEG>
+<'`',18,LEG>
+<'@<',11,RHEAD>
+<'./',2,BIT>
+<'./',2,BIT>
+<'./',2,BIT>
+<'./',2,BIT>
+<'-',9,PLUS>
+<'10',20,INT>
+<'###',14,BODY>
+<'LeQuack',20,KEYWORD>
+<'>@',12,LHEAD>
+<'###',14,BODY>
+<'<EOF>',1,<EOF>>
+
+Rewriting some tokens...
+New list of tokens:
+<'=@
+   ###
+    ``',23,DUCK_ERL>
+<'',21,COMMENT>
+<'###',14,BODY>
+<'',21,COMMENT>
+<'`',18,LEG>
+<'`',18,LEG>
+<’@<
+###’,15,DUCK_FR>
+<'./',2,BIT>
+<'./',2,BIT>
+<'./',2,BIT>
+<'./',2,BIT>
+<'-',9,PLUS>
+<'10',20,INT>
+<'LeQuack',20,KEYWORD>
+<'>@
+   ###',16,DUCK_FL>
+<'<EOF>',1,<EOF>>
+Parsing file...
+[PARSER] Success!

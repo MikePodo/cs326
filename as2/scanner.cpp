@@ -19,7 +19,8 @@
 std::string Scanner::tokenNames[] = {
     "n/a", "<EOF>", "BIT", "CLONE", "DUB", "POP", "MUL", "DIV", "PLUS",
     "MINUS", "STRING", "RHEAD", "LHEAD", "EHEAD", "BODY", "DUCK_FR",
-    "DUCK_FL", "DUCK_ER", "LEG", "ARROW", "KEYWORD", "ID"
+    "DUCK_FL", "DUCK_ER", "LEG", "ARROW", "KEYWORD", "ID", "COMMENT",
+    "DUCK_ERL", "INT"
 };
 
 Scanner::Scanner(int length, char* buffer) : length_(length),
@@ -38,6 +39,7 @@ Token Scanner::nextToken() {
 
     // Loop through until EOF
     while (lookahead_ != eof && lookahead_ != '\0') {
+        // std::cout << "lookahead: " << lookahead_ << std::endl;
         switch (lookahead_) {
             case ' ': // Space
             case '\n': // Newline
@@ -47,9 +49,28 @@ Token Scanner::nextToken() {
                 continue;
             case '.':
                 consume(); // Consume period
+
+                if (lookahead_ == ' ') {
+                    match(' '); // Consume space
+                    match('o'); // Consume 'o'
+                    match(' '); // Consume space
+                    match('O'); // Consume 'O'
+                    match(' '); // Consume space
+                    break;
+                }
+
+                // Not a comment, must be bit
                 match('/'); // Ensure '/' follows
                 tokenType = TokenType::tok_bit;
                 token = "./";
+                break;
+            case '(':
+                while (lookahead_ != ')') {
+                    consume(); // Consume comment characters
+                }
+                consume(); // Reached end of comment
+                tokenType = TokenType::tok_comment;
+                token = "";
                 break;
             case ',':
                 consume(); // Consume comma
@@ -109,6 +130,12 @@ Token Scanner::nextToken() {
                 tokenType = TokenType::tok_body;
                 token = "###";
                 break;
+
+            case '`':
+                consume(); // Consume leg
+                tokenType = TokenType::tok_leg;
+                token = "`";
+                break;
             case '@':
                 consume(); // Consume 'at'
                 if (lookahead_ == '<') {
@@ -123,15 +150,20 @@ Token Scanner::nextToken() {
                     token = "@=";
                 }
                 break;
+            case '=':
+                consume(); // Consume =
+                match('@'); // Ensure '@' follows
+                tokenType = TokenType::tok_ehead;
+                token = "=@";
+                break;
             case '>':
                 consume(); // Consume >
                 match('@'); // Ensure "@" follows
                 tokenType = TokenType::tok_lhead;
                 token = ">@";
                 break;
-
             default:
-                if (isLetter()) {
+                if (isAlphanumberic()) {
                     // Check for id or keyword
                     return name();
                 } else {
@@ -142,7 +174,7 @@ Token Scanner::nextToken() {
                 }
         }
 
-        if (token != "") { // Token was created
+        if (tokenType != TokenType::tok_na) { // Token was created
             return Token(tokenType, token); // Return created token
         }
     }
@@ -167,16 +199,28 @@ bool Scanner::isAlpha() const {
     return false; // Lookahead is not a letter
 }
 
-bool Scanner::isLetter() const {
+bool Scanner::isAlphanumberic() const {
     if (lookahead_ >= 'a' && lookahead_ <= 'z' || 
-        lookahead_ >= 'A' && lookahead_ <= 'Z') {
-        return true; // Lookahead is a letter
+        lookahead_ >= 'A' && lookahead_ <= 'Z' || 
+        lookahead_ >= '0' && lookahead_ <= '9') {
+        return true; // Lookahead isalphanumeric
     }
-    return false; // Lookahead is not a letter
+    return false; // Lookahead is not alphanumeric
 }
 
 Token Scanner::name() {
     std::string stringValue = "";
+
+    if (lookahead_ >= '0' && lookahead_ <= '9') { // is Int
+        while (lookahead_ >= '0' && lookahead_ <= '9') { 
+            // Build string with all valid numbers
+            stringValue += lookahead_;
+            consume();
+        }
+        return Token(TokenType::tok_int, stringValue);
+    }
+
+    // Otherwise it is a string (non-numeric)
     while (isAlpha()) { // Build string with all valid characters
         stringValue += lookahead_;
         consume();
